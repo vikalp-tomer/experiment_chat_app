@@ -131,3 +131,14 @@ module.exports.unFollowUser = async (req, res) => {
     return res.status(400).json({ status: "fail", message: error.message });
   }
 };
+
+module.exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await UserModel.find({ _id: { $ne: req.userID } }).select(
+      "-password -canRecieveMessageFromEveryone"
+    );
+    return res.status(200).json({ status: "success", users });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", message: error.message });
+  }
+};
