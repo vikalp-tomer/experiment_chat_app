@@ -142,3 +142,40 @@ module.exports.getAllUsers = async (req, res) => {
     return res.status(400).json({ status: "fail", message: error.message });
   }
 };
+
+module.exports.getUser = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.userID).select(
+      "-password"
+    );
+    return res.status(200).json({ status: "success", user });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", message: error.message });
+  }
+};
+
+module.exports.doIFollowThisUser = async (req, res) => {
+  try {
+    const followingID = req.params.userID;
+    const followRelation = Boolean(
+      await FollowModel.findOne({ userID: req.userID, followingID })
+    );
+
+    return res.status(200).json({ success: "true", followRelation });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", message: error.message });
+  }
+};
+
+module.exports.doesHeFollowMe = async (req, res) => {
+  try {
+    const followerID = req.params.userID;
+    const followRelation = Boolean(
+      await FollowModel.findOne({ userID: followerID, followingID: req.userID })
+    );
+
+    return res.status(200).json({ success: "true", followRelation });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", message: error.message });
+  }
+};
