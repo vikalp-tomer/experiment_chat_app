@@ -2,6 +2,7 @@ const UserModel = require("../models/userModel");
 const FollowModel = require("../models/followModel");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const ConversationModel = require("../models/conversationModel");
 
 module.exports.login = async (req, res) => {
   try {
@@ -175,6 +176,74 @@ module.exports.doesHeFollowMe = async (req, res) => {
     );
 
     return res.status(200).json({ success: "true", followRelation });
+  } catch (error) {
+    return res.status(400).json({ status: "fail", message: error.message });
+  }
+};
+
+module.exports.canIchatWithHim = async (req, res) => {
+  try {
+    const targetUserID = req.params.userID;
+    const loggedInUserID = req.userID;
+
+    const doIFollowThisUser = Boolean(
+      await FollowModel.findOne({
+        userID: loggedInUserID,
+        followingID: targetUserID,
+      })
+    );
+
+    const doesHeFollowMe = Boolean(
+      await FollowModel.findOne({
+        userID: targetUserID,
+        followingID: loggedInUserID,
+      })
+    );
+
+    if (!doIFollowThisUser && !doesHeFollowMe) {
+      const targetUser = await UserModel.findById(targetUserID);
+
+      if (targetUser.canRecieveMessageFromEveryone) {
+        const existingConversation = await ConversationModel.findOne({
+          $or: [
+            {
+              "user1.userID": targetUserID,
+              "user2.userID": loggedInUserID,
+            },
+            {
+              "user1.userID": loggedInUserID,
+              "user2.userID": targetUserID,
+            },
+          ],
+        });
+        return res.status(200).json({
+          success: "true",
+          message: "YES",
+          conversationID: existingConversation?._id,
+        });
+      } else {
+        return res.status(200).json({ success: "true", message: "NO" });
+      }
+    }
+
+    const existingConversation = await ConversationModel.findOne({
+      $or: [
+        {
+          "user1.userID": targetUserID,
+          "user2.userID": loggedInUserID,
+        },
+        {
+          "user1.userID": loggedInUserID,
+          "user2.userID": targetUserID,
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      success: "true",
+      message: "YES",
+      conversationID: existingConversation?._id,
+    });
   } catch (error) {
     return res.status(400).json({ status: "fail", message: error.message });
   }

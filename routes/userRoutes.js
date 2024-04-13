@@ -7,6 +7,7 @@ const {
   getUser,
   doIFollowThisUser,
   doesHeFollowMe,
+  canIchatWithHim,
 } = require("../controllers/userController");
 const { authenticateToken } = require("../middleware/jwtMiddleware");
 
@@ -20,6 +21,8 @@ router.get("/", authenticateToken, getAllUsers);
 
 router.get("/:userID/do-i-follow-him", authenticateToken, doIFollowThisUser);
 router.get("/:userID/does-he-follow-me", authenticateToken, doesHeFollowMe);
+router.get("/:userID/can-i-chat-with-him", authenticateToken, canIchatWithHim);
+
 router.get("/:userID", authenticateToken, getUser);
 
 module.exports = router;
