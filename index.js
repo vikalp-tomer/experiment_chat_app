@@ -4,6 +4,7 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const UserModel = require("./models/userModel");
 const jwt = require("jsonwebtoken");
 
@@ -32,6 +33,7 @@ const io = new Server(server, {
 app.use(express.json());
 
 app.use("/user", userRoutes);
+app.use("/message", messageRoutes);
 
 io.use(async (socket, next) => {
   try {
